@@ -38,9 +38,9 @@ export function genAssignmentCode (
   assignment: string
 ): string {
   const res = parseModel(value)
-  if (res.key === null) {
+  if (res.key === null) { // v-model绑定的是变量，直接赋值
     return `${value}=${assignment}`
-  } else {
+  } else { // v-moedl绑定的是对象里面的属性，需要使用$set变成响应数据
     return `$set(${res.exp}, ${res.key}, ${assignment})`
   }
 }
@@ -75,12 +75,12 @@ export function parseModel (val: string): ModelParseResult {
 
   if (val.indexOf('[') < 0 || val.lastIndexOf(']') < len - 1) {
     index = val.lastIndexOf('.')
-    if (index > -1) {
+    if (index > -1) { // 对象obj.val的情况
       return {
         exp: val.slice(0, index),
         key: '"' + val.slice(index + 1) + '"'
       }
-    } else {
+    } else { // 单纯是变量val的情况
       return {
         exp: val,
         key: null

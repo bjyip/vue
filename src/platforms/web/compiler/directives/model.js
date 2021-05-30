@@ -133,9 +133,10 @@ function genDefaultModel (
 
   // warn if v-bind:value conflicts with v-model
   // except for inputs with v-bind:type
+  // 检测该表单元素是否同时有v-model绑定和v-bind:value
   if (process.env.NODE_ENV !== 'production') {
-    const value = el.attrsMap['v-bind:value'] || el.attrsMap[':value']
-    const typeBinding = el.attrsMap['v-bind:type'] || el.attrsMap[':type']
+    const value = el.attrsMap['v-bind:value'] || el.attrsMap[':value'] // 绑定了value属性
+    const typeBinding = el.attrsMap['v-bind:type'] || el.attrsMap[':type'] // 绑定了type属性
     if (value && !typeBinding) {
       const binding = el.attrsMap['v-bind:value'] ? 'v-bind:value' : ':value'
       warn(
@@ -163,11 +164,13 @@ function genDefaultModel (
   }
 
   let code = genAssignmentCode(value, valueExpression)
+  // 添加event.target.composing判断。event.target.composing用于判断此次input事件是否是IME构成触发的，如果是IME构成，直接return。IME 是输入法编辑器(Input Method Editor) 的英文缩写，IME构成指我们在输入文字时，处于未确认状态的文字。
   if (needCompositionGuard) {
     code = `if($event.target.composing)return;${code}`
   }
-
+  // 给el添加props，这个方法其实是在input输入框上绑定了value：v-bild:value="value"
   addProp(el, 'value', `(${value})`)
+  // 给el添加input方法，实际上是变成v-on:input=“value=$event.target.value”(变量)或者v-on:input=“$set(obj, key, $event.target.value)”(对象属性)
   addHandler(el, event, code, null, true)
   if (trim || number) {
     addHandler(el, 'blur', '$forceUpdate()')
